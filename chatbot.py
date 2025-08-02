@@ -120,10 +120,13 @@ if "user_data" in st.session_state:
 
     chat = st.session_state.chat_session
 
-    # Display chat history
+    # Display chat history (excluding system prompt if it appears)
     for message in chat.history:
+        text = message.parts[0].text if message.parts else ""
+        if system_prompt.strip() in text:
+            continue  # Skip showing system prompt
         with st.chat_message(message.role):
-            st.markdown(message.parts[0].text if message.parts else "")
+            st.markdown(text)
 
     # User input box
     user_input = st.chat_input("Say something to Fyra...")
@@ -133,7 +136,7 @@ if "user_data" in st.session_state:
 
         with st.spinner("Fyra is typing..."):
 
-            # Prepend system prompt only on the first message
+            # Prepend system prompt only on first message
             if len(chat.history) == 0:
                 combined_prompt = f"{system_prompt}\n\nUser: {user_input}"
                 response = chat.send_message(combined_prompt, stream=True)
@@ -145,9 +148,6 @@ if "user_data" in st.session_state:
                 for chunk in response:
                     full_reply += chunk.text
                     st.markdown(full_reply)
-
-
-
 
 else:
     st.info("Please load a user profile from the sidebar to start chatting.")
